@@ -21,6 +21,8 @@ import { DocSheet, Documents } from "./public/documents";
 import { SecurityQA, SubscribeDialog, Subprocessors, UpdatesFeed } from "./public/engage";
 import { AccessAndContacts, MachineReadable, ServiceStatus, VerifyDialog, overallStatus, uptimeOf } from "./public/ops";
 import { useActiveSection } from "./public/layout";
+import { AskBox } from "./public/ask";
+import { DesignSwitcher } from "@/components/design/design-switcher";
 
 const NAV = [
   { id: "overview", label: "Overview" },
@@ -53,13 +55,14 @@ export function PublicTrustPage() {
   const toggleBasket = (id: string) => setBasket((b) => (b.includes(id) ? b.filter((x) => x !== id) : [...b, id]));
 
   return (
-    <div className="min-h-dvh bg-canvas">
+    <div className="app-bg min-h-dvh bg-canvas">
       <header className="sticky top-0 z-40 border-b border-line bg-canvas/90 backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-[1240px] items-center gap-3 px-4 sm:px-6">
           <TenantWordmark />
           <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
+            <DesignSwitcher />
             <Tooltip content="Subscribe to updates">
-              <Button variant="ghost" size="icon-sm" aria-label="Subscribe to updates" onClick={() => openSubscribe(["documents", "changes", "incidents"])}>
+              <Button variant="ghost" size="icon-sm" className="hidden sm:inline-flex" aria-label="Subscribe to updates" onClick={() => openSubscribe(["documents", "changes", "incidents"])}>
                 <BellRing />
               </Button>
             </Tooltip>
@@ -77,7 +80,7 @@ export function PublicTrustPage() {
       <main className="mx-auto max-w-[1240px] px-4 sm:px-6">
         {ready ? (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
-            <Hero onRequest={() => openRequest(basket)} onVerify={() => setVerifyOpen(true)} />
+            <Hero onRequest={() => openRequest(basket)} onRequestDocs={(ids) => openRequest(ids)} onVerify={() => setVerifyOpen(true)} onOpenDoc={setSheetDoc} />
             <KeyFigures />
             <Compliance onOpenDoc={setSheetDoc} />
             <Controls onOpenDoc={setSheetDoc} />
@@ -159,7 +162,7 @@ function PublicSkeleton() {
 }
 
 /* ───────── Hero ───────── */
-function Hero({ onRequest, onVerify }: { onRequest: () => void; onVerify: () => void }) {
+function Hero({ onRequest, onRequestDocs, onVerify, onOpenDoc }: { onRequest: () => void; onRequestDocs: (ids: string[]) => void; onVerify: () => void; onOpenDoc: (d: TrustDocument) => void }) {
   const profile = useTrust((s) => s.profile);
   const docs = useTrust((s) => s.documents);
   const components = useTrust((s) => s.components);
@@ -192,10 +195,8 @@ function Hero({ onRequest, onVerify }: { onRequest: () => void; onVerify: () => 
               Browse documents <ArrowRight />
             </a>
           </Button>
-          <a href="#qa" className="px-1 text-[13.5px] font-medium text-muted underline-offset-4 hover:text-fg hover:underline">
-            Search security answers
-          </a>
         </div>
+        <AskBox onOpenDoc={onOpenDoc} onRequest={onRequestDocs} />
         <dl className="mt-12 grid grid-cols-2 gap-x-6 gap-y-4 border-t border-line pt-6 sm:grid-cols-4">
           {profile.facts.map((f) => (
             <div key={f.label}>
@@ -251,7 +252,7 @@ export function UnknownTenant({ slug }: { slug: string }) {
   const tenant = useTrust((s) => s.tenants.find((t) => t.slug === slug));
   if (!ready) return <div className="min-h-dvh" />;
   return (
-    <div className="grid min-h-dvh place-items-center bg-canvas px-4">
+    <div className="app-bg grid min-h-dvh place-items-center bg-canvas px-4">
       <div className="card w-full max-w-md">
         <EmptyState
           title={tenant ? `${tenant.name} is not public yet` : "Trust center not found"}

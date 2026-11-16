@@ -132,7 +132,8 @@ export function SheetHeader({ title, description, children, className }: { title
 }
 
 export function SheetBody({ className, ...props }: React.ComponentProps<"div">) {
-  return <div className={cn("scroll-thin min-h-0 flex-1 overflow-y-auto px-5 py-5", className)} {...props} />;
+  // auto-rows-max: when a caller makes this a grid, rows keep their content height instead of shrinking to fit the scroll box.
+  return <div className={cn("scroll-thin min-h-0 flex-1 auto-rows-max overflow-y-auto px-5 py-5", className)} {...props} />;
 }
 
 export function SheetFooter({ className, ...props }: React.ComponentProps<"div">) {

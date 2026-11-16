@@ -7,6 +7,8 @@ import { Dialog as D } from "radix-ui";
 import { useTheme } from "next-themes";
 import { toast } from "sonner";
 import {
+  Palette,
+  Workflow,
   Activity,
   ChartNoAxesColumn,
   Blocks,
@@ -36,6 +38,8 @@ import { useTrust } from "@/lib/store";
 import { useUi } from "@/lib/ui";
 import { Kbd } from "@/components/ui/badge";
 import { resetDemo } from "./demo-switcher";
+import { DESIGNS, applyDesign, useDesign } from "@/lib/designs";
+import { useSchemeLocked } from "@/components/design/design-switcher";
 
 export const ADMIN_NAV = [
   { href: "/admin", label: "Overview", icon: LayoutDashboard, group: "Trust center" },
@@ -43,6 +47,7 @@ export const ADMIN_NAV = [
   { href: "/admin/access", label: "Access", icon: UsersRound, group: "Trust center" },
   { href: "/admin/logs", label: "Access logs", icon: ScrollText, group: "Trust center" },
   { href: "/admin/analytics", label: "Analytics", icon: ChartNoAxesColumn, group: "Trust center" },
+  { href: "/admin/automations", label: "Automations", icon: Workflow, group: "Trust center" },
   { href: "/admin/updates", label: "Updates and notices", icon: Megaphone, group: "Engagement" },
   { href: "/admin/questionnaires", label: "Q&A and questionnaires", icon: MessagesSquare, group: "Engagement" },
   { href: "/admin/subprocessors", label: "Subprocessors", icon: Network, group: "Engagement" },
@@ -66,6 +71,8 @@ export function CommandPalette() {
   const reviewers = useTrust((s) => s.reviewers);
   const regenerate = useTrust((s) => s.regeneratePackage);
   const { resolvedTheme, setTheme } = useTheme();
+  const design = useDesign();
+  const locked = useSchemeLocked();
 
   React.useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -117,12 +124,21 @@ export function CommandPalette() {
                 >
                   <RefreshCw /> Regenerate and validate package JSON
                 </Command.Item>
-                <Command.Item className={item} onSelect={() => run(() => setTheme(resolvedTheme === "dark" ? "light" : "dark"))}>
+                <Command.Item className={item} disabled={!!locked} onSelect={() => run(() => setTheme(resolvedTheme === "dark" ? "light" : "dark"))}>
                   <Moon /> Switch to {resolvedTheme === "dark" ? "light" : "dark"} theme
                 </Command.Item>
                 <Command.Item className={item} onSelect={() => run(resetDemo)}>
                   <RotateCcw /> Reset demo data
                 </Command.Item>
+              </Group>
+              <Group heading="Design">
+                {DESIGNS.map((d) => (
+                  <Command.Item key={d.id} value={`design look ${d.name} ${d.audience}`} className={item} onSelect={() => run(() => applyDesign(d.id, setTheme))}>
+                    <Palette /> {d.name}
+                    <span className="truncate text-[12px] text-muted">{d.audience}</span>
+                    {design.id === d.id && <span className="ml-auto text-[11.5px] text-faint">Current</span>}
+                  </Command.Item>
+                ))}
               </Group>
               <Group heading="Go to">
                 {ADMIN_NAV.map((n) => (

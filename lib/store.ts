@@ -17,6 +17,8 @@ import type {
   Incident,
   Integration,
   KsiMetric,
+  Automation,
+  AutomationRun,
   NdaRecord,
   StandardQuestionnaire,
   LogEvent,
@@ -68,6 +70,7 @@ import {
   seedWebhooks,
 } from "@/lib/mock/seed-extra";
 import { NDA_VERSION, seedKsi, seedNdaRecords, seedStandardQuestionnaires } from "@/lib/mock/seed-v3";
+import { seedAutomations } from "@/lib/mock/seed-v4";
 import { DAY, HOUR, MIN, domainMatches, emailDomain, fakeHash, uid } from "@/lib/utils";
 
 export type Branding = { accent: string; logo: string | null; displayName: string };
@@ -109,6 +112,9 @@ type Data = {
   ndaRecords: NdaRecord[];
   ksi: KsiMetric[];
   standardQuestionnaires: StandardQuestionnaire[];
+  /* v4 */
+  automations: Automation[];
+  automationRuns: AutomationRun[];
 };
 
 /** Keys of list slices whose items have an id; usable with upsert/remove. */
@@ -171,6 +177,8 @@ type Actions = {
   toggleWatch: (docId: string) => void;
   /* v3 */
   revalidateKsi: () => void;
+  /* v4 */
+  recordRun: (automationId: string, summary: string, result?: AutomationRun["result"]) => void;
 };
 
 export type TrustStore = Data & Actions;
@@ -250,6 +258,10 @@ function seed(): Data {
     ndaRecords: seedNdaRecords(now, requests),
     ksi: seedKsi(now),
     standardQuestionnaires: seedStandardQuestionnaires(now),
+    ...(() => {
+      const a = seedAutomations(now);
+      return { automations: a.automations, automationRuns: a.runs };
+    })(),
   };
 }
 
@@ -663,6 +675,15 @@ export const useTrust = create<TrustStore>()(
             ...withAudit({ actor: "System", action: "Ran KSI validation", target: `${s.ksi.reduce((a, k) => a + k.checks, 0)} checks`, detail: "All passing", category: "package" }),
           })),
 
+        recordRun: (automationId, summary, result = "success") =>
+          set((s) => {
+            const at = new Date().toISOString();
+            return {
+              automationRuns: [{ id: uid("run"), automationId, at, summary, result, ms: Math.round(300 + Math.random() * 1800) }, ...s.automationRuns],
+              automations: s.automations.map((a) => (a.id === automationId ? { ...a, runs: a.runs + (result === "success" ? 1 : 0), lastRunAt: at } : a)),
+            };
+          }),
+
         toggleWatch: (docId) =>
           set((s) => ({
             session: {
@@ -674,7 +695,7 @@ export const useTrust = create<TrustStore>()(
     },
     {
       name: "secureknots-trust-demo",
-      version: 3,
+      version: 4,
       storage: createJSONStorage(() => localStorage),
       skipHydration: true,
       // Older saved demo data has a different shape: start again from the seed.

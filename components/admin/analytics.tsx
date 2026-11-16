@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, Card, CardHeader } from "@/components/ui/display";
 import { Segmented } from "@/components/ui/controls";
+import { Bars3D } from "@/components/kit/charts3d";
 import { Sheet, SheetBody, SheetContent, SheetHeader } from "@/components/ui/dialog";
 import { Tooltip } from "@/components/ui/menu";
 import { useReady } from "@/lib/hooks";
@@ -106,6 +107,7 @@ function AnalyticsBody() {
   const faqs = useTrust((s) => s.faqs);
   const [range, setRange] = React.useState<Range>("90d");
   const [open, setOpen] = React.useState<string | null>(null);
+  const [heatView, setHeatView] = React.useState<"3d" | "grid">("3d");
   const days = RANGE_DAYS[range];
 
   const data = React.useMemo(() => {
@@ -289,8 +291,27 @@ function AnalyticsBody() {
         </Card>
 
         <Card className="min-w-0">
-          <CardHeader title="Activity by weekday" description="Top agencies, all access events" />
-          {data.heat.length ? (
+          <CardHeader
+            title="Activity by weekday"
+            description="Top agencies, all access events"
+            action={
+              <Segmented
+                size="sm"
+                layoutId="heat-view"
+                value={heatView}
+                onChange={setHeatView}
+                options={[
+                  { value: "3d", label: "3D" },
+                  { value: "grid", label: "Grid" },
+                ]}
+              />
+            }
+          />
+          {data.heat.length && heatView === "3d" ? (
+            <div className="px-2 pb-3 pt-2">
+              <Bars3D rows={data.heat.map((h) => h.agency.short)} cols={WEEKDAYS} values={data.heat.map((h) => h.row)} height={300} />
+            </div>
+          ) : data.heat.length ? (
             <div className="px-4 pb-5 pt-4 sm:px-5">
               <div className="grid grid-cols-[64px_repeat(7,minmax(0,1fr))] gap-[2px] text-[11px]">
                 <span />

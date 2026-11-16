@@ -16,6 +16,7 @@ import { useReady } from "@/lib/hooks";
 import { useTrust } from "@/lib/store";
 import { cn, diffLines, fmt, sleep } from "@/lib/utils";
 import { PageSkeleton } from "./common";
+import { PackageCompleteness } from "./completeness";
 
 type Step = { label: string; detail: string };
 
@@ -174,6 +175,8 @@ function Body() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <PackageCompleteness onRegenerate={run} busy={running} />
 
       <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_340px]">
         <Card className="min-w-0 overflow-hidden">

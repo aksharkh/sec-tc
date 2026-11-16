@@ -347,3 +347,29 @@ export type StandardQuestionnaire = {
   owner: string;
   items: StandardItem[];
 };
+
+/* ───────── v4: automations ───────── */
+export type AutomationCategory = "access" | "documents" | "monitoring" | "questionnaires" | "reporting";
+export type Automation = {
+  id: string;
+  name: string;
+  category: AutomationCategory;
+  trigger: string;
+  condition?: string;
+  actions: string[];
+  enabled: boolean;
+  runs: number;
+  /** Minutes of manual work each run replaces. */
+  minutesPerRun: number;
+  lastRunAt?: string;
+  createdBy: string;
+  template?: boolean;
+};
+export type AutomationRun = {
+  id: string;
+  automationId: string;
+  at: string;
+  summary: string;
+  result: "success" | "skipped" | "failed";
+  ms: number;
+};

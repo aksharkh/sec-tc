@@ -1,5 +1,6 @@
 import { format, startOfDay, startOfWeek } from "date-fns";
 import type { LogEvent, Reviewer } from "@/lib/types";
+import { AGENCIES } from "@/lib/mock/catalog";
 import { DAY } from "@/lib/utils";
 
 export const isView = (e: LogEvent) => e.action === "view";
@@ -78,4 +79,24 @@ export function activeReviewerTrend(reviewers: Reviewer[], weeks = 12) {
       return g <= t && t <= end;
     }).length;
   });
+}
+
+/** Top agencies × weekday activity matrix for the 3D landscape. */
+export function agencyWeekdayMatrix(logs: LogEvent[], days: number, top = 6) {
+  const now = Date.now();
+  const from = now - days * DAY;
+  const counts = new Map<string, number[]>();
+  for (const e of logs) {
+    const t = new Date(e.at).getTime();
+    if (t < from || e.handle === "anonymous") continue;
+    const row = counts.get(e.agencyId) ?? Array.from({ length: 7 }, () => 0);
+    row[(new Date(e.at).getDay() + 6) % 7]! += 1;
+    counts.set(e.agencyId, row);
+  }
+  const ranked = [...counts.entries()].sort((a, b) => b[1].reduce((x, y) => x + y, 0) - a[1].reduce((x, y) => x + y, 0)).slice(0, top);
+  return {
+    rows: ranked.map(([id]) => AGENCIES.find((a) => a.id === id)?.short ?? id),
+    cols: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+    values: ranked.map(([, row]) => row),
+  };
 }

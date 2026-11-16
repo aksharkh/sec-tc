@@ -46,6 +46,8 @@ import { TenantFooter, TenantWordmark } from "./chrome";
 import { RequestAccessDialog } from "./request-access";
 import { KsiDashboard } from "./ksi-dashboard";
 import { StandardView } from "./public/engage";
+import { AskBox } from "./public/ask";
+import { DesignSwitcher } from "@/components/design/design-switcher";
 
 export function ReviewerPortal() {
   const ready = useReady();
@@ -66,11 +68,12 @@ export function ReviewerPortal() {
   }
 
   return (
-    <div className="flex min-h-dvh flex-col bg-canvas">
+    <div className="app-bg flex min-h-dvh flex-col bg-canvas">
       <header className="sticky top-0 z-30 border-b border-line bg-canvas/95 supports-[backdrop-filter]:bg-canvas/85 supports-[backdrop-filter]:backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-[1160px] items-center gap-3 px-4 sm:px-6">
           <TenantWordmark sub="Reviewer portal" />
           <div className="ml-auto flex items-center gap-2">
+            <DesignSwitcher />
             <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
               <Link href="/t/northwind">Public page</Link>
             </Button>
@@ -332,8 +335,10 @@ function ActivePortal({ reviewer }: { reviewer: Reviewer }) {
         )}
       </div>
 
+      <AskBox who="reviewer" className="mt-5" canRead={(d) => scoped.some((x) => x.id === d.id)} onOpenDoc={(d) => open(d, d.versions[0]!.version)} />
+
       <Tabs
-        className="mt-5"
+        className="mt-6"
         layoutId="portal-section"
         value={section}
         onChange={setSection}

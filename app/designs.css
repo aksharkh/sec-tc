@@ -1,0 +1,308 @@
+/* ─────────────────────────────────────────────────────────────
+   Seven complete looks, the same set as SecureKnots Workspace.
+   Each one only redefines tokens (color, type, radius, depth,
+   background), so every screen follows. Selected with
+   <html data-design="…">; also works on any element, which is
+   how the switcher renders live previews.
+   Token names follow this app: --fg (Workspace --ink),
+   --brand-fg (--on-brand), --d-radius-lg/-sm (card/control radius).
+   ───────────────────────────────────────────────────────────── */
+
+/* Map the kit's fixed radii to the active design's radius. */
+[data-design] .card,
+[data-design] [data-slot="card"],
+[data-design] [class*="rounded-[10px]"],
+[data-design] [class*="rounded-[12px]"],
+[data-design] [class*="rounded-[14px]"] {
+  border-radius: var(--d-radius-lg, 10px);
+}
+[data-design] [data-slot="button"],
+[data-design] [class*="rounded-[8px]"],
+[data-design] [class*="rounded-[9px]"],
+[data-design] [class*="rounded-[7px]"] {
+  border-radius: var(--d-radius-sm, 8px);
+}
+
+/* ───────── 1. Meridian: secureknots.com ───────── */
+[data-design="meridian"]:not(.dark) {
+  --canvas: #f3f1ec;
+  --surface: #fbfaf7;
+  --raised: #f6f4ef;
+  --subtle: #efece5;
+  --subtle-2: #e6e2d9;
+  --line: rgb(15 23 41 / 0.1);
+  --line-strong: rgb(15 23 41 / 0.16);
+  --fg: #0f1729;
+  --muted: #636a78;
+  --brand: #1f3fae;
+  --brand-soft: #e7ecff;
+}
+[data-design="meridian"] {
+  --d-radius-sm: 6px;
+  --d-radius-lg: 8px;
+}
+
+/* ───────── 2. Mono: black, white, gray ───────── */
+[data-design="mono"]:not(.dark) {
+  --canvas: #f4f4f5;
+  --surface: #ffffff;
+  --raised: #fafafa;
+  --subtle: #f4f4f5;
+  --subtle-2: #e4e4e7;
+  --line: rgb(0 0 0 / 0.08);
+  --line-strong: rgb(0 0 0 / 0.14);
+  --fg: #09090b;
+  --fg-2: #3f3f46;
+  --muted: #71717a;
+  --faint: #a1a1aa;
+  --brand: #09090b;
+  --brand-hover: #27272a;
+  --brand-soft: #f1f1f2;
+  --brand-ink: #09090b;
+  --brand-fg: #ffffff;
+  --ring: rgb(0 0 0 / 0.22);
+  --chart-1: #3f3f46;
+  --chart-2: #a1a1aa;
+}
+
+/* ───────── 3. Boardroom: readable for everyone ───────── */
+[data-design="boardroom"] {
+  --inverse: #ffffff;
+  --canvas: #eceef2;
+  --surface: #ffffff;
+  --raised: #f7f8fa;
+  --subtle: #f1f3f6;
+  --subtle-2: #e2e6ec;
+  --line: rgb(17 24 39 / 0.13);
+  --line-strong: rgb(17 24 39 / 0.22);
+  --fg: #0b1320;
+  --fg-2: #273244;
+  --muted: #4a5568;
+  --faint: #6b7280;
+  --brand: #1e3a5f;
+  --brand-hover: #16304f;
+  --brand-soft: #e6edf6;
+  --brand-ink: #1e3a5f;
+  --brand-fg: #ffffff;
+  --ring: rgb(30 58 95 / 0.35);
+  --chart-1: #1e3a5f;
+  --chart-2: #c2410c;
+  --d-radius-sm: 6px;
+  --d-radius-lg: 8px;
+}
+[data-design="boardroom"] main {
+  font-size: 15px;
+}
+/* Phones already fill the width, so the extra scale is only for larger screens. */
+@media (min-width: 768px) {
+  [data-design="boardroom"] main > * {
+    zoom: 1.06;
+  }
+}
+
+/* ───────── 4. Aurora: gradient glass ───────── */
+[data-design="aurora"] {
+  --inverse: #ffffff;
+  --app-bg:
+    radial-gradient(55% 45% at 8% 0%, #ffd3ef 0%, transparent 60%),
+    radial-gradient(45% 45% at 95% 5%, #cddbff 0%, transparent 60%),
+    radial-gradient(60% 55% at 75% 100%, #ffe1c4 0%, transparent 60%),
+    radial-gradient(50% 50% at 15% 95%, #d9f5ec 0%, transparent 60%);
+  --canvas: #f7f3ff;
+  --surface: rgb(255 255 255 / 0.66);
+  --raised: rgb(255 255 255 / 0.5);
+  --subtle: rgb(124 58 237 / 0.06);
+  --subtle-2: rgb(124 58 237 / 0.12);
+  --line: rgb(91 33 182 / 0.1);
+  --line-strong: rgb(91 33 182 / 0.2);
+  --fg: #1d1033;
+  --fg-2: #433863;
+  --muted: #6c6390;
+  --faint: #a29bbf;
+  --brand: #7c3aed;
+  --brand-hover: #6d28d9;
+  --brand-soft: rgb(124 58 237 / 0.1);
+  --brand-ink: #5b21b6;
+  --brand-fg: #ffffff;
+  --ring: rgb(124 58 237 / 0.3);
+  --chart-1: #7c3aed;
+  --chart-2: #db2777;
+  --font-display: var(--font-space);
+  --d-radius-sm: 14px;
+  --d-radius-lg: 20px;
+  --shadow-xs: 0 1px 2px rgb(76 29 149 / 0.06), 0 8px 24px -12px rgb(76 29 149 / 0.18);
+  --shadow-md: 0 20px 60px -30px rgb(76 29 149 / 0.35);
+}
+[data-design="aurora"] .font-serif {
+  letter-spacing: -0.035em;
+  font-weight: 600;
+}
+[data-design="aurora"] .card,
+[data-design="aurora"] [data-slot="card"] {
+  backdrop-filter: blur(20px) saturate(1.5);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5);
+}
+[data-design="aurora"] [data-slot="button"][data-variant="primary"] {
+  background-image: linear-gradient(120deg, #7c3aed, #c026d3 55%, #f97316);
+  box-shadow: 0 8px 20px -8px rgb(192 38 211 / 0.6), inset 0 1px 0 rgb(255 255 255 / 0.25);
+}
+
+/* ───────── 5. Brutal: neo-brutalist ───────── */
+[data-design="brutal"] {
+  --inverse: #fffdf6;
+  --canvas: #fbf3dc;
+  --surface: #fffdf6;
+  --raised: #fff7e3;
+  --subtle: #f5ecd3;
+  --subtle-2: #eadcb8;
+  --line: #111111;
+  --line-strong: #111111;
+  --fg: #111111;
+  --fg-2: #262626;
+  --muted: #4b4b4b;
+  --faint: #7a7a7a;
+  --brand: #111111;
+  --brand-hover: #000000;
+  --brand-soft: #fff27a;
+  --brand-ink: #111111;
+  --brand-fg: #fffdf6;
+  --ring: rgb(17 17 17 / 0.4);
+  --chart-1: #111111;
+  --chart-2: #c6f432;
+  --font-ui: var(--font-space);
+  --font-display: var(--font-space);
+  --font-code: var(--font-jet);
+  --d-radius-sm: 4px;
+  --d-radius-lg: 6px;
+  --shadow-xs: 3px 3px 0 #111;
+  --shadow-sm: 4px 4px 0 #111;
+  --shadow-md: 5px 5px 0 #111;
+  --shadow-lg: 6px 6px 0 #111;
+}
+[data-design="brutal"] main h1.font-serif {
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+}
+[data-design="brutal"] .card,
+[data-design="brutal"] [data-slot="card"] {
+  border-width: 2px;
+  box-shadow: var(--shadow-sm);
+}
+[data-design="brutal"] [data-slot="card"]:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0 #111;
+}
+[data-design="brutal"] [data-slot="button"] {
+  border: 2px solid #111;
+  box-shadow: 2px 2px 0 #111;
+}
+[data-design="brutal"] [data-slot="button"][data-variant="primary"] {
+  background: #c6f432;
+  color: #111;
+}
+[data-design="brutal"] [data-slot="button"][data-variant="ghost"],
+[data-design="brutal"] [data-slot="button"][data-variant="link"] {
+  border-color: transparent;
+  box-shadow: none;
+}
+
+/* ───────── 6. Spatial: glass in depth ───────── */
+[data-design="spatial"] {
+  --inverse: #09090b;
+  --app-bg:
+    radial-gradient(38% 38% at 18% 12%, rgb(129 140 248 / 0.22), transparent 70%),
+    radial-gradient(36% 36% at 88% 18%, rgb(244 114 182 / 0.16), transparent 70%),
+    radial-gradient(48% 48% at 55% 105%, rgb(45 212 191 / 0.16), transparent 70%);
+  --canvas: #05060a;
+  --surface: rgb(255 255 255 / 0.045);
+  --raised: rgb(255 255 255 / 0.06);
+  --subtle: rgb(255 255 255 / 0.06);
+  --subtle-2: rgb(255 255 255 / 0.11);
+  --line: rgb(255 255 255 / 0.1);
+  --line-strong: rgb(255 255 255 / 0.18);
+  --fg: #f5f5f7;
+  --fg-2: #d4d4d8;
+  --muted: #a1a1aa;
+  --faint: #71717a;
+  --brand: #ffffff;
+  --brand-hover: #e4e4e7;
+  --brand-soft: rgb(255 255 255 / 0.1);
+  --brand-ink: #ffffff;
+  --brand-fg: #09090b;
+  --ring: rgb(255 255 255 / 0.3);
+  --chart-1: #a5b4fc;
+  --chart-2: #5eead4;
+  --font-display: var(--font-geist);
+  --d-radius-sm: 14px;
+  --d-radius-lg: 22px;
+  --shadow-xs: inset 0 1px 0 rgb(255 255 255 / 0.07), 0 18px 40px -22px rgb(0 0 0 / 0.8);
+  --shadow-md: inset 0 1px 0 rgb(255 255 255 / 0.06), 0 30px 80px -30px rgb(0 0 0 / 0.9);
+  --shadow-lg: 0 30px 70px -20px rgb(0 0 0 / 0.9), 0 0 0 1px rgb(255 255 255 / 0.12);
+}
+[data-design="spatial"] .card,
+[data-design="spatial"] [data-slot="card"] {
+  backdrop-filter: blur(28px) saturate(1.6);
+  -webkit-backdrop-filter: blur(28px) saturate(1.6);
+}
+[data-design="spatial"] [data-slot="card"] {
+  transition: transform 0.5s var(--ease-out), box-shadow 0.5s var(--ease-out);
+  transform-style: preserve-3d;
+}
+[data-design="spatial"] [data-slot="card"]:hover {
+  transform: perspective(900px) rotateX(2deg) translateY(-3px);
+}
+[data-design="spatial"] .font-serif {
+  font-weight: 500;
+  letter-spacing: -0.035em;
+}
+
+/* ───────── 7. Nocturne: neon on black ───────── */
+[data-design="nocturne"] {
+  --inverse: #050505;
+  --canvas: #030303;
+  --surface: #0a0a0a;
+  --raised: #0f0f0f;
+  --subtle: #141414;
+  --subtle-2: #1e1e1e;
+  --line: rgb(255 255 255 / 0.07);
+  --line-strong: rgb(255 255 255 / 0.13);
+  --fg: #f2f2f2;
+  --fg-2: #cfcfcf;
+  --muted: #959595;
+  --faint: #626262;
+  --brand: #34f5a4;
+  --brand-hover: #6bffc0;
+  --brand-soft: rgb(52 245 164 / 0.1);
+  --brand-ink: #7dffc8;
+  --brand-fg: #01170d;
+  --ring: rgb(52 245 164 / 0.35);
+  --chart-1: #34f5a4;
+  --chart-2: #f5d634;
+  --font-code: var(--font-jet);
+  --font-display: var(--font-geist);
+  --shadow-md: 0 0 0 1px rgb(52 245 164 / 0.07), 0 0 60px -30px rgb(52 245 164 / 0.25);
+}
+[data-design="nocturne"] .tnum {
+  font-family: var(--font-jet);
+  letter-spacing: -0.02em;
+}
+[data-design="nocturne"] .font-serif {
+  letter-spacing: -0.03em;
+}
+[data-design="nocturne"] [data-slot="card"]:hover {
+  box-shadow: 0 0 0 1px rgb(52 245 164 / 0.18), 0 0 32px -12px rgb(52 245 164 / 0.35);
+}
+[data-design="nocturne"] [data-slot="button"][data-variant="primary"] {
+  box-shadow: 0 0 24px -6px rgb(52 245 164 / 0.7);
+}
+
+/* Smooth hand-off between looks */
+[data-slot="card"] {
+  transition: background-color 0.4s, border-color 0.4s, box-shadow 0.4s, transform 0.4s;
+}
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}

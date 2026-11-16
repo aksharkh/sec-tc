@@ -164,10 +164,10 @@ export function DataTable<T>({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -4 }}
               transition={{ duration: 0.16, ease: [0.16, 1, 0.3, 1] }}
-              className="absolute inset-0 z-10 flex items-center gap-2 overflow-x-auto bg-fg px-3 text-surface sm:px-4"
+              className="absolute inset-0 z-10 flex items-center gap-2 overflow-x-auto bg-fg px-3 text-inverse sm:px-4"
             >
               <span className="whitespace-nowrap text-[13px] font-medium">{selectedRows.length} selected</span>
-              <div className="ml-2 flex items-center gap-1.5 [&_button]:border-white/15 [&_button]:bg-white/10 [&_button]:text-surface [&_button:hover]:bg-white/20 dark:[&_button]:border-black/15 dark:[&_button]:bg-black/10 dark:[&_button:hover]:bg-black/20">
+              <div className="ml-2 flex items-center gap-1.5 [&_button]:border-white/15 [&_button]:bg-white/10 [&_button]:text-inverse [&_button:hover]:bg-white/20 dark:[&_button]:border-black/15 dark:[&_button]:bg-black/10 dark:[&_button:hover]:bg-black/20">
                 {bulkActions?.(selectedRows, clear)}
               </div>
               <button onClick={clear} className="ml-auto inline-flex h-7 items-center gap-1 whitespace-nowrap rounded-[7px] px-2 text-[12.5px] opacity-80 hover:opacity-100">

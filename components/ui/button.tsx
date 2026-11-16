@@ -36,7 +36,7 @@ export type ButtonProps = React.ComponentProps<"button"> &
 export function Button({ className, variant, size, asChild, loading, children, disabled, ...props }: ButtonProps) {
   const Comp = asChild ? Slot.Root : "button";
   return (
-    <Comp suppressHydrationWarning className={cn(buttonVariants({ variant, size }), className)} disabled={asChild ? undefined : disabled || loading} {...props}>
+    <Comp suppressHydrationWarning data-slot="button" data-variant={variant ?? "secondary"} className={cn(buttonVariants({ variant, size }), className)} disabled={asChild ? undefined : disabled || loading} {...props}>
       {asChild ? (
         children
       ) : (

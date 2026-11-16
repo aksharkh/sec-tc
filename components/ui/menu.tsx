@@ -89,11 +89,11 @@ export function Tooltip({
         <T.Content
           side={side}
           sideOffset={6}
-          className="z-[60] flex max-w-64 items-center gap-2 rounded-[7px] bg-fg px-2 py-1.5 text-[12px] font-medium text-surface shadow-md data-[state=delayed-open]:animate-menu-in"
+          className="z-[60] flex max-w-64 items-center gap-2 rounded-[7px] bg-fg px-2 py-1.5 text-[12px] font-medium text-inverse shadow-md data-[state=delayed-open]:animate-menu-in"
         >
           {content}
           {shortcut && (
-            <span className="rounded-[4px] bg-surface/15 px-1 font-mono text-[10.5px] text-surface/80">{shortcut}</span>
+            <span className="rounded-[4px] bg-surface/15 px-1 font-mono text-[10.5px] text-inverse/80">{shortcut}</span>
           )}
         </T.Content>
       </T.Portal>

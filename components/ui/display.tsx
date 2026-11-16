@@ -3,7 +3,7 @@ import { cn, initials } from "@/lib/utils";
 
 /* ───────── Card ───────── */
 export function Card({ className, ...props }: React.ComponentProps<"div">) {
-  return <div className={cn("card", className)} {...props} />;
+  return <div data-slot="card" className={cn("card", className)} {...props} />;
 }
 
 export function CardHeader({

@@ -15,7 +15,12 @@ import { Segmented } from "@/components/ui/controls";
 import { useReady } from "@/lib/hooks";
 import { effectiveStatus, useTrust } from "@/lib/store";
 import { useUi } from "@/lib/ui";
-import { activeReviewerTrend, activitySeries, inWindow, isDownload, isView, pctChange, weeklyCounts } from "@/lib/analytics";
+import { activeReviewerTrend, activitySeries, agencyWeekdayMatrix, inWindow, isDownload, isView, pctChange, weeklyCounts } from "@/lib/analytics";
+import { Bars3D } from "@/components/kit/charts3d";
+import { Autopilot } from "./autopilot";
+import { TrustViz } from "./trust-viz";
+import { healthRows } from "@/lib/completeness";
+import { useDesign } from "@/lib/designs";
 import { fmt, nowMs } from "@/lib/utils";
 import { ACTION_LABEL, ChannelBadge, PageSkeleton, agencyShort } from "./common";
 
@@ -37,6 +42,19 @@ function OverviewBody() {
   const docs = useTrust((s) => s.documents);
   const setUi = useUi((s) => s.set);
   const [range, setRange] = React.useState<"30d" | "90d" | "6m">("30d");
+  const pkg = useTrust((s) => s.pkg);
+  const ksi = useTrust((s) => s.ksi);
+  const standards = useTrust((s) => s.standardQuestionnaires);
+  const ndaRecords = useTrust((s) => s.ndaRecords);
+  const ndaVersion = useTrust((s) => s.security.ndaVersion);
+  const design = useDesign();
+  const [chartPick, setChart] = React.useState<"bars" | "3d" | null>(null);
+  // Follows the design (3D in Spatial) until the user picks one.
+  const chart = chartPick ?? (design.chart === "iso" ? "3d" : "bars");
+  const health = React.useMemo(
+    () => healthRows({ docs, pkg, ksi, standards, requests, reviewers, ndaRecords, ndaVersion }),
+    [docs, pkg, ksi, standards, requests, reviewers, ndaRecords, ndaVersion],
+  );
 
   const { cur, prev } = React.useMemo(() => ({ cur: inWindow(logs, 30), prev: inWindow(logs, 60, 30) }), [logs]);
   const views = cur.filter(isView).length;
@@ -46,6 +64,7 @@ function OverviewBody() {
   const pending = requests.filter((r) => r.status === "pending");
   const oldest = pending.at(-1);
   const series = activitySeries(logs, range);
+  const landscape = React.useMemo(() => agencyWeekdayMatrix(logs, range === "30d" ? 30 : range === "90d" ? 91 : 182), [logs, range]);
   const totals = series.reduce((a, b) => ({ web: a.web + b.web, api: a.api + b.api }), { web: 0, api: 0 });
 
   const top = React.useMemo(() => {
@@ -100,6 +119,11 @@ function OverviewBody() {
         />
       </div>
 
+      <div className="mt-4">
+        <TrustViz rows={health} />
+      </div>
+
+      <Autopilot />
       <NeedsAttention />
 
       <div className="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1.65fr)_minmax(0,1fr)]">
@@ -108,24 +132,42 @@ function OverviewBody() {
             title="Access over time"
             description={`${fmt.num(totals.web + totals.api)} views, downloads and API fetches ${range === "30d" ? "per day, last 30 days" : range === "90d" ? "per week, last 90 days" : "per week, last 6 months"}`}
             action={
-              <Segmented
-                size="sm"
-                layoutId="ov-range"
-                value={range}
-                onChange={setRange}
-                options={[
-                  { value: "30d", label: "30d" },
-                  { value: "90d", label: "90d" },
-                  { value: "6m", label: "6m" },
-                ]}
-              />
+              <div className="flex flex-wrap justify-end gap-1.5">
+                <Segmented
+                  size="sm"
+                  layoutId="ov-chart"
+                  value={chart}
+                  onChange={setChart}
+                  options={[
+                    { value: "bars", label: "Bars" },
+                    { value: "3d", label: "3D" },
+                  ]}
+                />
+                <Segmented
+                  size="sm"
+                  layoutId="ov-range"
+                  value={range}
+                  onChange={setRange}
+                  options={[
+                    { value: "30d", label: "30d" },
+                    { value: "90d", label: "90d" },
+                    { value: "6m", label: "6m" },
+                  ]}
+                />
+              </div>
             }
           />
           <div className="px-4 pb-4 pt-3 sm:px-5">
-            <Legend series={SERIES} />
-            <div className="mt-3">
-              <StackedBars data={series} series={SERIES} xKey="label" unit="events" />
-            </div>
+            {chart === "bars" ? (
+              <>
+                <Legend series={SERIES} />
+                <div className="mt-3">
+                  <StackedBars data={series} series={SERIES} xKey="label" unit="events" />
+                </div>
+              </>
+            ) : (
+              <Bars3D {...landscape} unit="events" height={280} />
+            )}
           </div>
         </Card>
 

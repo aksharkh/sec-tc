@@ -66,7 +66,7 @@ export function Chip({ className, active, ...props }: React.ComponentProps<"butt
       className={cn(
         "inline-flex h-7 items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 text-[12.5px] font-medium transition-colors duration-150 [&_svg]:size-3.5",
         active
-          ? "border-transparent bg-fg text-surface"
+          ? "border-transparent bg-fg text-inverse"
           : "border-line-strong bg-surface text-muted hover:bg-subtle hover:text-fg dark:bg-raised",
         className,
       )}

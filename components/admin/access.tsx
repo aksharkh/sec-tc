@@ -4,7 +4,8 @@ import * as React from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { toast } from "sonner";
 import type { ColumnDef } from "@tanstack/react-table";
-import { BadgeCheck, Ban, Check, CircleSlash, Clock3, Download, Ellipsis, FileSignature, Plus, RotateCw, Server, ShieldCheck, Trash2, UserRound, Zap } from "lucide-react";
+import { BadgeCheck, Ban, Check, CircleSlash, Clock3, Download, Ellipsis, FileSignature, Gauge, Plus, RotateCw, Server, ShieldCheck, Sparkles, Trash2, UserRound, Zap } from "lucide-react";
+import { scoreRequest, suggestFor } from "@/lib/triage";
 import { PageHeader, EmptyState } from "@/components/kit/bits";
 import { DataTable } from "@/components/kit/data-table";
 import { Button } from "@/components/ui/button";
@@ -80,8 +81,54 @@ function Requests({ initialStatus }: { initialStatus: RequestStatus }) {
     denied: requests.filter((r) => r.status === "denied").length,
   };
   const list = requests.filter((r) => r.status === status);
+  const rules = useTrust((s) => s.rules);
+  const approve = useTrust((s) => s.approveRequest);
+  const patch = useTrust((s) => s.patch);
+  const triage = requests
+    .filter((r) => r.status === "pending")
+    .map((r) => ({ r, s: suggestFor(r, scoreRequest(r, rules, requests)) }));
+  const actionable = triage.filter((t) => t.s.action !== "review");
+  const review = triage.filter((t) => t.s.action === "review");
   return (
     <div>
+      {status === "pending" && triage.length > 0 && (
+        <div className="mb-4 rounded-[10px] border border-line bg-surface">
+          <div className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center">
+            <Sparkles className="hidden size-4 shrink-0 text-muted sm:block" />
+            <div className="min-w-0 flex-1">
+              <p className="text-[13px] font-medium text-fg">Triage suggestions</p>
+              <p className="text-[12.5px] text-muted">
+                Scored from domain, history, NDA and purpose. {actionable.length} can be decided now
+                {review.length > 0 && <>, {review.length} {review.length === 1 ? "needs" : "need"} a person</>}.
+              </p>
+            </div>
+            <Button
+              size="sm"
+              variant="primary"
+              disabled={!actionable.length}
+              onClick={() => {
+                const prev = { requests: useTrust.getState().requests, reviewers: useTrust.getState().reviewers };
+                actionable.forEach((t) => approve(t.r.id, t.s.length ?? "90d"));
+                toast.success(`Accepted ${actionable.length} ${actionable.length === 1 ? "suggestion" : "suggestions"}`, {
+                  description: `${actionable.map((t) => `${t.r.name.split(" ")[0]}: ${t.s.label.replace("Approve for ", "")}`).join(", ")}. ${review.length ? `${review.length} left for you.` : ""}`,
+                  action: { label: "Undo", onClick: () => patch(prev) },
+                });
+              }}
+            >
+              Accept all suggestions
+            </Button>
+          </div>
+          <ul className="border-t border-line px-4 py-1.5">
+            {triage.map(({ r, s }) => (
+              <li key={r.id} className="flex flex-wrap items-center gap-x-3 gap-y-0.5 py-1.5 text-[12.5px]">
+                <span className="w-36 truncate font-medium text-fg">{r.name}</span>
+                <Badge tone={s.action === "approve" ? "success" : s.action === "approve-expiry" ? "warning" : "danger"}>{s.label}</Badge>
+                <span className="min-w-0 flex-1 truncate text-muted">{s.why}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       <div className="scroll-thin -mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
         <Segmented
           layoutId="req-status"
@@ -201,11 +248,13 @@ function RequestCard({ r }: { r: AccessRequest }) {
                   <Zap /> Auto-approved
                 </Badge>
               )}
+              {r.status === "pending" && <RiskBadge r={r} />}
             </div>
           </div>
         </div>
 
         <div className="flex shrink-0 flex-col gap-2 lg:w-[240px] lg:items-end">
+          {r.status === "pending" && <SuggestionLine r={r} onAccept={(len) => { const prev = snapshot(); approve(r.id, len); toast.success(`Approved ${r.name}`, { description: `${LENGTH_LABEL[len]}, as suggested.`, action: { label: "Undo", onClick: () => patch(prev) } }); }} />}
           {r.status === "pending" ? (
             <div className="flex flex-wrap gap-2 lg:justify-end">
               <Button variant="danger-ghost" size="sm" onClick={() => setDenyOpen(true)}>
@@ -886,5 +935,56 @@ function NdaRecords() {
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+/* ───────── Risk triage ───────── */
+function SuggestionLine({ r, onAccept }: { r: AccessRequest; onAccept: (l: AccessLength) => void }) {
+  const rules = useTrust((s) => s.rules);
+  const requests = useTrust((s) => s.requests);
+  const s = suggestFor(r, scoreRequest(r, rules, requests));
+  return (
+    <div className="flex items-center gap-2 text-[12.5px] lg:justify-end">
+      <span className="text-muted">Suggested:</span>
+      <span className="font-medium text-fg">{s.label}</span>
+      {s.action !== "review" && (
+        <Button size="xs" variant="secondary" onClick={() => onAccept(s.length ?? "90d")}>
+          Accept
+        </Button>
+      )}
+    </div>
+  );
+}
+
+function RiskBadge({ r }: { r: AccessRequest }) {
+  const rules = useTrust((s) => s.rules);
+  const requests = useTrust((s) => s.requests);
+  const risk = scoreRequest(r, rules, requests);
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button className="rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring">
+          <Badge tone={risk.level === "low" ? "success" : risk.level === "medium" ? "warning" : "danger"}>
+            <Gauge /> {risk.level === "low" ? "Low" : risk.level === "medium" ? "Medium" : "High"} risk · {risk.score}
+          </Badge>
+        </button>
+      </PopoverTrigger>
+      <PopoverContent align="start" className="w-80 p-3">
+        <div className="text-[13px] font-semibold text-fg">Why this score</div>
+        <p className="mt-0.5 text-[12px] text-muted">Starts at 40. Lower is safer. Scored from the email domain, history, NDA and purpose.</p>
+        <ul className="mt-2 grid gap-1">
+          {risk.reasons.map((x) => (
+            <li key={x.text} className="flex items-center justify-between gap-3 text-[12.5px]">
+              <span className="text-fg">{x.text}</span>
+              <span className={cn("font-mono", x.weight > 0 ? "text-danger-fg" : "text-success-fg")}>
+                {x.weight > 0 ? "+" : ""}
+                {x.weight}
+              </span>
+            </li>
+          ))}
+          {!risk.reasons.length && <li className="text-[12.5px] text-muted">No signals either way.</li>}
+        </ul>
+      </PopoverContent>
+    </Popover>
   );
 }

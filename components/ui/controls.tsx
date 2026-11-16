@@ -200,7 +200,7 @@ export function Tabs<T extends string>({
           >
             {t.label}
             {t.count !== undefined && (
-              <span className={cn("rounded-full px-1.5 text-[11px] leading-[18px]", active ? "bg-fg text-surface" : "bg-subtle text-muted")}>{t.count}</span>
+              <span className={cn("rounded-full px-1.5 text-[11px] leading-[18px]", active ? "bg-fg text-inverse" : "bg-subtle text-muted")}>{t.count}</span>
             )}
             {active && (
               <motion.span layoutId={layoutId} className="absolute inset-x-0 -bottom-px h-[2px] rounded-full bg-fg" transition={{ type: "spring", stiffness: 500, damping: 40 }} />

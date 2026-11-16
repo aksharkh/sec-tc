@@ -4,7 +4,7 @@ import * as React from "react";
 import { motion } from "motion/react";
 import { toast } from "sonner";
 import { addMonths, startOfMonth } from "date-fns";
-import { BellRing, Camera, CheckCircle2, Download, FileArchive, History, Mail, RotateCcw, ShieldCheck } from "lucide-react";
+import { BellRing, Camera, CheckCircle2, Download, FileArchive, History, Mail, RotateCcw, ShieldCheck, Sparkles, TriangleAlert } from "lucide-react";
 import { PageHeader, EmptyState } from "@/components/kit/bits";
 import { Timeline } from "@/components/kit/widgets";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,10 @@ import { Badge, type Tone } from "@/components/ui/badge";
 import { Card, CardHeader, ProgressBar } from "@/components/ui/display";
 import { Checkbox } from "@/components/ui/controls";
 import { Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader } from "@/components/ui/dialog";
-import { Field, Input } from "@/components/ui/field";
+import { Field, Input, Textarea } from "@/components/ui/field";
+import { changesSince, noticeBody } from "@/lib/changes";
+import { checkPackage } from "@/lib/completeness";
+import Link from "next/link";
 import { useReady } from "@/lib/hooks";
 import { useTrust } from "@/lib/store";
 import type { Snapshot } from "@/lib/types";
@@ -142,6 +145,11 @@ function SnapshotDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (
   const pkg = useTrust((s) => s.pkg);
   const subscribers = useTrust((s) => s.subscribers);
   const reviewers = useTrust((s) => s.reviewers);
+  const snapshots = useTrust((s) => s.snapshots);
+  const subprocessors = useTrust((s) => s.subprocessors);
+  const ksi = useTrust((s) => s.ksi);
+  const incidents = useTrust((s) => s.incidents);
+  const [edited, setEdited] = React.useState<string | null>(null);
   const [label, setLabel] = React.useState("");
   const [publish, setPublish] = React.useState(true);
   const [notify, setNotify] = React.useState(true);
@@ -156,10 +164,14 @@ function SnapshotDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (
   const restricted = docs.filter((d) => d.visibility === "restricted").length;
   const name = label.trim() || defaultLabel();
   const title = `Package snapshot sealed: ${name}`;
-  const body = `Northwind sealed ${docs.length} published documents (${restricted} restricted) and package JSON revision ${pkg.revision}. Each file's checksum is recorded, so you can confirm that what you downloaded matches this snapshot.`;
+  const { since, changes } = React.useMemo(() => changesSince({ snapshots, docs, pkg, subprocessors, ksi, incidents }), [snapshots, docs, pkg, subprocessors, ksi, incidents]);
+  const generated = noticeBody({ changes, since, docs: docs.length, restricted, revision: pkg.revision });
+  const body = edited ?? generated;
+  const gaps = React.useMemo(() => checkPackage(docs, pkg).filter((c) => c.status !== "ok"), [docs, pkg]);
 
   const reset = () => {
     setLabel("");
+    setEdited(null);
     setPublish(true);
     setNotify(true);
     setTouched(false);
@@ -230,10 +242,33 @@ function SnapshotDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (
             </label>
           </div>
 
+          {gaps.length > 0 && (
+            <div className="flex items-start gap-2.5 rounded-[10px] border border-warning/40 bg-warning-soft px-3.5 py-2.5 text-[12.5px]">
+              <TriangleAlert className="mt-0.5 size-4 shrink-0 text-warning-fg" />
+              <span className="min-w-0 flex-1 text-fg">
+                The package has {gaps.length} {gaps.length === 1 ? "gap" : "gaps"}: {gaps.map((g) => `${g.label} (${g.status === "missing" ? "missing" : "out of date"})`).join(", ")}. You can still take the snapshot.{" "}
+                <Link href="/admin/machine-readable#completeness" className="font-medium underline underline-offset-4" onClick={() => onOpenChange(false)}>
+                  Review the check
+                </Link>
+              </span>
+            </div>
+          )}
+
           {publish && (
             <div>
-              <div className="mb-2 flex items-center gap-1.5 text-[12px] font-medium text-muted">
-                <Mail className="size-3.5" /> Notice preview
+              <div className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] font-medium text-muted">
+                <span className="flex items-center gap-1.5">
+                  <Mail className="size-3.5" /> Notice preview
+                </span>
+                <span className="flex items-center gap-1 font-normal text-faint">
+                  <Sparkles className="size-3" />
+                  Written from {changes.length} {changes.length === 1 ? "change" : "changes"} since {since ? since.label : "the first snapshot"}
+                </span>
+                {edited !== null && (
+                  <button type="button" className="ml-auto font-medium text-fg underline-offset-4 hover:underline" onClick={() => setEdited(null)}>
+                    Rewrite from changes
+                  </button>
+                )}
               </div>
               <div className="rounded-[10px] border border-line bg-raised p-4 dark:bg-transparent">
                 <div className="flex flex-wrap items-center gap-2">
@@ -241,7 +276,13 @@ function SnapshotDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (
                   <span className="text-[11.5px] text-faint">Approved reviewers only</span>
                 </div>
                 <div className="mt-2 text-[14px] font-medium text-fg">{title}</div>
-                <p className="mt-1 text-[13px] leading-relaxed text-muted">{body}</p>
+                <Textarea
+                  aria-label="Notice text"
+                  rows={Math.min(12, body.split("\n").length + 2)}
+                  value={body}
+                  onChange={(e) => setEdited(e.target.value)}
+                  className="mt-2 border-transparent bg-transparent px-0 text-[13px] leading-relaxed text-fg-2 shadow-none focus-visible:border-line-strong focus-visible:px-2"
+                />
               </div>
             </div>
           )}

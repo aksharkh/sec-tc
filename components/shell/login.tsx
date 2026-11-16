@@ -12,6 +12,7 @@ import { useTrust } from "@/lib/store";
 import { useQueryParam } from "@/lib/ui";
 import { cn, sleep } from "@/lib/utils";
 import { ThemeToggle } from "./app-shell";
+import { DesignSwitcher } from "@/components/design/design-switcher";
 
 function MicrosoftMark() {
   return (
@@ -149,7 +150,7 @@ export function LoginScreen() {
   );
 
   return (
-    <div className="grid min-h-dvh bg-canvas lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">
+    <div className="app-bg grid min-h-dvh bg-canvas lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">
       <BrandPanel />
       <div className="flex flex-col">
         <div className="flex items-center justify-between p-4 sm:p-6">
@@ -159,7 +160,10 @@ export function LoginScreen() {
               SecureKnots <span className="font-normal text-muted">Trust</span>
             </span>
           </div>
-          <ThemeToggle />
+          <div className="flex items-center gap-1.5">
+            <ThemeToggle />
+            <DesignSwitcher />
+          </div>
         </div>
         <div className="grid flex-1 place-items-center px-4 pb-24 sm:px-6">
           <div className="w-full max-w-[380px]">

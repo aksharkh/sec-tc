@@ -10,6 +10,7 @@ import { Building2, Ellipsis, Moon, RotateCcw, Sun } from "lucide-react";
 import { Menu, MenuContent, MenuItem, MenuLabel, MenuSeparator, MenuTrigger } from "@/components/ui/menu";
 import { useTrust } from "@/lib/store";
 import { cn } from "@/lib/utils";
+import { useSchemeLocked } from "@/components/design/design-switcher";
 
 type View = "public" | "reviewer" | "admin";
 
@@ -42,6 +43,7 @@ export function DemoSwitcher() {
   const { resolvedTheme, setTheme } = useTheme();
   const signedIn = useTrust((s) => s.session.adminSignedIn);
   const active = viewFor(path);
+  const locked = useSchemeLocked();
   if (path === "/") return null;
 
   return (
@@ -89,9 +91,9 @@ export function DemoSwitcher() {
               <Building2 />
               All trust centers (SecureKnots)
             </MenuItem>
-            <MenuItem onSelect={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}>
+            <MenuItem disabled={!!locked} onSelect={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}>
               {resolvedTheme === "dark" ? <Sun /> : <Moon />}
-              {resolvedTheme === "dark" ? "Light theme" : "Dark theme"}
+              {locked ? `This design is ${locked} only` : resolvedTheme === "dark" ? "Light theme" : "Dark theme"}
             </MenuItem>
             <MenuSeparator />
             <MenuItem onSelect={resetDemo}>

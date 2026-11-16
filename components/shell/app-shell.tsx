@@ -4,6 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
+import { DesignSwitcher, useSchemeLocked } from "@/components/design/design-switcher";
 import { Drawer } from "vaul";
 import { motion } from "motion/react";
 import {
@@ -325,9 +326,10 @@ export function ThemeToggle() {
   const { resolvedTheme, setTheme } = useTheme();
   const hydrated = useHydrated();
   const dark = hydrated && resolvedTheme === "dark";
+  const locked = useSchemeLocked();
   return (
-    <Tooltip content={dark ? "Light theme" : "Dark theme"}>
-      <Button variant="ghost" size="icon-sm" aria-label="Toggle theme" onClick={() => setTheme(dark ? "light" : "dark")}>
+    <Tooltip content={locked ? `This design is ${locked} only` : dark ? "Light theme" : "Dark theme"}>
+      <Button variant="ghost" size="icon-sm" aria-label="Toggle theme" disabled={!!locked} onClick={() => setTheme(dark ? "light" : "dark")}>
         <Sun className="hidden dark:block" />
         <Moon className="dark:hidden" />
       </Button>
@@ -389,6 +391,7 @@ const LABELS: Record<string, string> = {
   access: "Access",
   logs: "Access logs",
   analytics: "Analytics",
+  automations: "Automations",
   "machine-readable": "Machine-readable",
   api: "API",
   snapshots: "Snapshots",
@@ -449,7 +452,7 @@ export function AppShell({ children, mode = "admin" }: { children: React.ReactNo
   }, [hydrated, signedIn, router, path]);
 
   return (
-    <div className="min-h-dvh bg-canvas">
+    <div className="app-bg min-h-dvh bg-canvas">
       <aside
         className={cn(
           "fixed inset-y-0 left-0 z-30 hidden border-r border-line bg-canvas transition-[width] duration-200 ease-[var(--ease-out)] lg:block",
@@ -490,6 +493,7 @@ export function AppShell({ children, mode = "admin" }: { children: React.ReactNo
             </Tooltip>
             <Notifications />
             <ThemeToggle />
+            <DesignSwitcher className="ml-1" />
             <div className="ml-1">
               <UserMenu mode={mode} />
             </div>

@@ -10,6 +10,7 @@ import { KSI_CHECKS, PRACTICES } from "@/lib/mock/catalog";
 import { useTrust } from "@/lib/store";
 import type { KsiMetric, TrustDocument } from "@/lib/types";
 import { cn, fmt, sleep } from "@/lib/utils";
+import { RadialBars } from "@/components/kit/charts3d";
 
 /** 30-day pass-rate trend: thin bars, full height = 100%. */
 function TrendBars({ values }: { values: number[] }) {
@@ -76,9 +77,18 @@ export function KsiDashboard({
 
   return (
     <div className="grid grid-cols-1 gap-4">
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="min-w-0 flex-1">
+      <div className="grid grid-cols-1 items-center gap-5 rounded-[12px] border border-line bg-surface p-4 sm:grid-cols-[220px_minmax(0,1fr)]">
+        <RadialBars
+          size={210}
+          items={ksi.map((k) => ({ id: k.id, label: PRACTICES.find((p) => p.id === k.id)?.name ?? k.id, value: k.automation }))}
+          center={`${Math.round(ksi.reduce((a, k) => a + k.automation * k.checks, 0) / Math.max(1, ksi.reduce((a, k) => a + k.checks, 0)))}%`}
+          caption="validated automatically"
+        />
+        <div className="min-w-0">
           <KsiSummary ksi={ksi} />
+          <p className="mt-3 text-[12.5px] leading-relaxed text-muted">
+            Each wedge is one theme; its length is the share of checks that run automatically every day. Hover a wedge for the theme.
+          </p>
         </div>
       </div>
       {canRevalidate && (
